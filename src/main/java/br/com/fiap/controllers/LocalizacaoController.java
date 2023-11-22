@@ -2,11 +2,13 @@ package br.com.fiap.controllers;
 
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -45,42 +47,27 @@ public class LocalizacaoController {
     @Autowired
     private DiagnosticoRepository diagnosticoRepository;
 
-    @Autowired
-    PagedResourcesAssembler<Object> assembler;
-
     @GetMapping
-    public PagedModel<EntityModel<Object>> index(@RequestParam(required = false) String busca, @ParameterObject @PageableDefault(size = 5) Pageable pageable) {
-        var localizacao = (busca == null) ?
-            localizacaoRepository.findAll(pageable):
-            localizacaoRepository.findByNmCidadeContaining(busca, pageable);
-
-        return assembler.toModel(localizacao.map(Localizacao::toEntityModel)); //HAL
+    public Page<Localizacao> index(@RequestParam(required = false) String busca, @PageableDefault(size = 5) Pageable pageable) {
+        if (busca == null)
+            return localizacaoRepository.findAll(pageable);
+        return localizacaoRepository.findByNmCidadeContaining(busca, pageable);
     }
 
     @PostMapping
-    @ApiResponses({
-        @ApiResponse(responseCode = "201", description = "A localizacao foi cadastrada com sucesso"),
-        @ApiResponse(responseCode = "400", description = "os dados enviados são inválidos")
-    })
-    public ResponseEntity<EntityModel<Localizacao>> create(
+    public ResponseEntity<Localizacao> create(
             @RequestBody @Valid Localizacao localizacao,
             BindingResult result) {
         log.info("cadastrando a localizacao: " + localizacao);
         localizacaoRepository.save(localizacao);
         localizacao.setDiagnostico(diagnosticoRepository.findById(localizacao.getDiagnostico().getId()).get());
-        return ResponseEntity
-            .created(localizacao.toEntityModel().getRequiredLink("self").toUri())
-            .body(localizacao.toEntityModel());
+        return ResponseEntity.status(HttpStatus.CREATED).body(localizacao);
     }
 
     @GetMapping("{id}")
-    @Operation(
-        summary = "Detalhes da localizacao",
-        description = "Retornar os dados da localizacao de acordo com o id informado no path"
-    )
-    public EntityModel<Localizacao> show(@PathVariable Long id) {
-        log.info("buscando localização: " + id);
-        return getLocalizacao(id).toEntityModel();
+    public ResponseEntity<Localizacao> show(@PathVariable Long id) {
+        log.info("buscando doenca: " + id);
+        return ResponseEntity.ok(getLocalizacao(id));
     }
 
     @DeleteMapping("{id}")
@@ -91,14 +78,14 @@ public class LocalizacaoController {
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<EntityModel<Localizacao>> update(
+    public ResponseEntity<Localizacao> update(
             @PathVariable Long id,
             @RequestBody @Valid Localizacao localizacao) {
-        log.info("atualizando localizacao: " + id);
+        log.info("atualizando doença: " + id);
         getLocalizacao(id);
         localizacao.setId(id);
         localizacaoRepository.save(localizacao);
-        return ResponseEntity.ok(localizacao.toEntityModel());
+        return ResponseEntity.ok(localizacao);
     }
 
     private Localizacao getLocalizacao(Long id) {
@@ -107,4 +94,3 @@ public class LocalizacaoController {
     }
 
 }
-

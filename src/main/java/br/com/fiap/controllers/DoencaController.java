@@ -2,11 +2,13 @@ package br.com.fiap.controllers;
 
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,9 +25,7 @@ import br.com.fiap.exceptions.RestNotFoundException;
 import br.com.fiap.models.Doenca;
 import br.com.fiap.repository.DiagnosticoRepository;
 import br.com.fiap.repository.DoencaRepository;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -43,60 +43,45 @@ public class DoencaController {
 
     private DiagnosticoRepository diagnosticoRepository;
 
-    @Autowired
-    PagedResourcesAssembler<Object> assembler;
-
     @GetMapping
-    public PagedModel<EntityModel<Object>> index(@RequestParam(required = false) String busca, @ParameterObject @PageableDefault(size = 5) Pageable pageable) {
-        var doencas = (busca == null) ? 
-            doencaRepository.findAll(pageable): 
-            doencaRepository.findByNmDoencaContaining(busca, pageable);
-
-        return assembler.toModel(doencas.map(Doenca::toEntityModel)); //HAL
+    public Page<Doenca> index(@RequestParam(required = false) String busca, @PageableDefault(size = 5) Pageable pageable) {
+        if (busca == null)
+            return doencaRepository.findAll(pageable);
+        return doencaRepository.findByNmDoencaContaining(busca, pageable);
     }
 
     @PostMapping
-    @ApiResponses({
-        @ApiResponse(responseCode = "201", description = "a doença foi cadastrada com sucesso"),
-        @ApiResponse(responseCode = "400", description = "os dados enviados são inválidos")
-    })
-    public ResponseEntity<EntityModel<Doenca>> create(
+    public ResponseEntity<Doenca> create(
             @RequestBody @Valid Doenca doenca,
             BindingResult result) {
-        log.info("cadastrando doença: " + doenca);
+        log.info("cadastrando doenca: " + doenca);
         doencaRepository.save(doenca);
         doenca.setDiagnostico(diagnosticoRepository.findById(doenca.getDiagnostico().getId()).get());
-        return ResponseEntity
-            .created(doenca.toEntityModel().getRequiredLink("self").toUri())
-            .body(doenca.toEntityModel());
+        return ResponseEntity.status(HttpStatus.CREATED).body(doenca);
     }
 
     @GetMapping("{id}")
-    @Operation(
-        summary = "Detalhes da doença",
-        description = "Retornar os dados da doença de acordo com o id informado no path"
-    )
-    public EntityModel<Doenca> show(@PathVariable Long id) {
-        log.info("buscando doença: " + id);
-        return getDoenca(id).toEntityModel();
+    public ResponseEntity<Doenca> show(@PathVariable Long id) {
+        log.info("buscando doenca: " + id);
+        return ResponseEntity.ok(getDoenca(id));
     }
 
     @DeleteMapping("{id}")
     public ResponseEntity<Doenca> destroy(@PathVariable Long id) {
-        log.info("apagando Doença: " + id);
+        log.info("apagando doença: " + id);
         doencaRepository.delete(getDoenca(id));
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<EntityModel<Doenca>> update(
+    public ResponseEntity<Doenca> update(
             @PathVariable Long id,
             @RequestBody @Valid Doenca doenca) {
-        log.info("atualizando refeicao: " + id);
+        log.info("atualizando doença: " + id);
         getDoenca(id);
         doenca.setId(id);
         doencaRepository.save(doenca);
-        return ResponseEntity.ok(doenca.toEntityModel());
+        return ResponseEntity.ok(doenca);
     }
 
     private Doenca getDoenca(Long id) {
