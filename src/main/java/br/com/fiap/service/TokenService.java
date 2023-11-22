@@ -16,6 +16,7 @@ import br.com.fiap.models.Medico;
 import br.com.fiap.models.Token;
 import br.com.fiap.repository.MedicoRepository;
 
+@Service
 public class TokenService {
 
     @Autowired
