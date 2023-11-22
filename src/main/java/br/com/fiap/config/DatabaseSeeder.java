@@ -33,13 +33,14 @@ public class DatabaseSeeder implements CommandLineRunner{
 
     @Override
     public void run(String... args) throws Exception {
-        
+
+        // Crie um médico
         Medico medico1 = Medico.builder().crm("").nmMedico("Dr. João").email("medico@gmail.com").senha("senha123").build();
-        medicoRepository.saveAll(List.of(medico1));
+        medicoRepository.save(medico1);
 
         // Crie uma doença
         Doenca doenca1 = Doenca.builder().nmDoenca("Gripe").dsSintomas("Febre, tosse, dor de cabeça").build();
-        doencaRepository.saveAll(List.of(doenca1));
+        doencaRepository.save(doenca1);
 
         // Crie um diagnóstico associado ao médico e à doença
         Diagnostico diagnostico1 = Diagnostico.builder().nrCep("05773-110").dtDiagnostico(LocalDate.now()).medico(medico1).doenca(doenca1).build();
@@ -55,5 +56,5 @@ public class DatabaseSeeder implements CommandLineRunner{
                 .build();
         localizacaoRepository.save(localizacao1);
     }
-    
 }
+

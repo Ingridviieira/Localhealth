@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
-
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,7 +31,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
-
 @Slf4j
 @RestController
 @RequestMapping("/api/medico")
@@ -50,13 +49,12 @@ public class MedicoController {
     @Autowired
     TokenService tokenService;
 
-    @PostMapping("/api/registrar")
-    public ResponseEntity<Medico> registrar(@RequestBody @Valid Medico medico){
+    @PostMapping("/registrar")
+    public ResponseEntity<Medico> registrar(@RequestBody @Valid Medico medico) {
         medico.setSenha(encoder.encode(medico.getSenha()));
         repository.save(medico);
         return ResponseEntity.ok(medico);
-    }
-
+}
     @PostMapping("/api/login")
     public ResponseEntity<Object> login(@RequestBody Credencial credencial){
         manager.authenticate(credencial.toAuthentication());
@@ -97,7 +95,7 @@ public class MedicoController {
 
     private Medico getMedico(Long id) {
         return repository.findById(id).orElseThrow(
-                () -> new RestNotFoundException("doença não encontrada"));
+                () -> new RestNotFoundException("médico não encontrado"));
     }
-
 }
+

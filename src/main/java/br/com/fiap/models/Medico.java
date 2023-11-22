@@ -1,5 +1,6 @@
 package br.com.fiap.models;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -7,15 +8,19 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+
 @Entity
 @Data
 @Builder
@@ -31,6 +36,9 @@ public class Medico implements UserDetails {
     private String nmMedico;
     private String email;
     private String senha;
+
+    @OneToMany(mappedBy = "medico", cascade = CascadeType.ALL)
+    private List<Diagnostico> diagnosticos = new ArrayList<>();
    
     @Override
     public String getPassword() {
