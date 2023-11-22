@@ -31,8 +31,6 @@ public class Diagnostico {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String nrCid;
-
     private String nrCep;
 
     private LocalDate dtDiagnostico;
