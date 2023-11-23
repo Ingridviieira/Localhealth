@@ -26,11 +26,6 @@ Descrição: Retorna informações sobre um médico específico com base no ID.
 
 Descrição: Cria um novo registro de médico
 
-**Campos da Requisição**
-| Campo | Tipo | Obrigatório | Descrição |
-|-------|------|:-----------:|-----------|
-
-||||
 
 # Exemplo de corpo de requisição
 ```js
@@ -47,12 +42,6 @@ Descrição: Atualizar informações sobre um médico específico.
 
 `PUT` /api/v1/medico/{id}
 
-**Campos da Requisição**
-| Campo | Tipo | Obrigatório | Descrição |
-|-------|------|:-----------:|-----------|
-
-||||
-
 
 # Exemplo de corpo de requisição
 ```js
@@ -66,13 +55,6 @@ Descrição: Atualizar informações sobre um médico específico.
    }
 ```
 
-|código|Descrição
-|-|-
-200 | Dados Retornados com sucesso
-400 | Dados atualizados
-4004| Usuario não encontrado, com o id informado
-
---------------------------
 
  `DELETE` /api/v1/medicos/{id}
 Descrição: Excluir um registro de médico específico.
