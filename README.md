@@ -143,7 +143,7 @@ Descrição: Criar um novo registro de doença
 ```
 
 ### Atualizar Doença
-`POST`  /api/v1/doencas/{id}
+`PUT`  /api/v1/doencas/{id}
 
 Descrição: Atualizar informações sobre uma doença específica.
 
