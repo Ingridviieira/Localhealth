@@ -10,7 +10,7 @@ import br.com.fiap.models.Medico;
 
 
 public interface MedicoRepository extends JpaRepository<Medico, Long> {
-     Optional<Medico> findByCrm(String Crm);
+    Optional<Medico> findByCrm(String Crm);
 
     Page<Medico> findByCrmContaining(String busca, Pageable pageable);
 }
