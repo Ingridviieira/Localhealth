@@ -38,7 +38,7 @@ public class Medico implements UserDetails {
     private String senha;
 
     @OneToMany(mappedBy = "medico", cascade = CascadeType.ALL)
-    private List<Diagnostico> diagnosticos = new ArrayList<>();
+    private List<Diagnostico> diagnostico = new ArrayList<>();
    
     @Override
     public String getPassword() {

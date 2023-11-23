@@ -67,12 +67,12 @@ Descrição: Excluir um registro de médico específico.
 Descrição: Obter uma lista de todos os diagnósticos.
 Obter Diagnóstico por ID
 
-`GET` /api/v1/diagnosticos/{id}
+`GET` /api/v1/diagnostico/{id}
 
 Descrição: Obter informações sobre um diagnóstico específico.
 
  ### Criar Novo Diagnóstico
-`POST` /api/v1/diagnosticos
+`POST` /api/v1/diagnostico
 
 Descrição: Criar um novo registro de diagnóstico.
 
