@@ -47,45 +47,60 @@ public class LocalizacaoController {
     @Autowired
     private DiagnosticoRepository diagnosticoRepository;
 
+    @Autowired
+    PagedResourcesAssembler<Object> assembler;
+
     @GetMapping
-    public Page<Localizacao> index(@RequestParam(required = false) String busca, @PageableDefault(size = 5) Pageable pageable) {
-        if (busca == null)
-            return localizacaoRepository.findAll(pageable);
-        return localizacaoRepository.findByNmCidadeContaining(busca, pageable);
+    public PagedModel<EntityModel<Object>> index(@RequestParam(required = false) String busca, @ParameterObject @PageableDefault(size = 5) Pageable pageable) {
+        var localizacao = (busca == null) ? 
+            localizacaoRepository.findAll(pageable): 
+            localizacaoRepository.findByNmCidadeContaining(busca, pageable);
+
+        return assembler.toModel(localizacao.map(Localizacao::toEntityModel)); //HAL
     }
 
     @PostMapping
-    public ResponseEntity<Localizacao> create(
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "a despesa foi cadastrada com sucesso"),
+        @ApiResponse(responseCode = "400", description = "os dados enviados são inválidos")
+    })
+    public ResponseEntity<EntityModel<Localizacao>> create(
             @RequestBody @Valid Localizacao localizacao,
             BindingResult result) {
-        log.info("cadastrando a localizacao: " + localizacao);
+        log.info("cadastrando localizacao: " + localizacao);
         localizacaoRepository.save(localizacao);
         localizacao.setDiagnostico(diagnosticoRepository.findById(localizacao.getDiagnostico().getId()).get());
-        return ResponseEntity.status(HttpStatus.CREATED).body(localizacao);
+        return ResponseEntity
+            .created(localizacao.toEntityModel().getRequiredLink("self").toUri())
+            .body(localizacao.toEntityModel());
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<Localizacao> show(@PathVariable Long id) {
-        log.info("buscando doenca: " + id);
-        return ResponseEntity.ok(getLocalizacao(id));
+    @Operation(
+        summary = "Detalhes da localizacao",
+        description = "Retornar os dados da localizacao de acordo com o id informado no path"
+    )
+    public EntityModel<Localizacao> show(@PathVariable Long id) {
+        log.info("buscando localizacao: " + id);
+        return getLocalizacao(id).toEntityModel();
     }
 
     @DeleteMapping("{id}")
     public ResponseEntity<Localizacao> destroy(@PathVariable Long id) {
-        log.info("apagando localização: " + id);
+        log.info("apagando localizacao: " + id);
         localizacaoRepository.delete(getLocalizacao(id));
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<Localizacao> update(
+    public ResponseEntity<EntityModel<Localizacao>> update(
             @PathVariable Long id,
             @RequestBody @Valid Localizacao localizacao) {
-        log.info("atualizando doença: " + id);
+        log.info("atualizando despesa: " + id);
         getLocalizacao(id);
         localizacao.setId(id);
         localizacaoRepository.save(localizacao);
-        return ResponseEntity.ok(localizacao);
+        return ResponseEntity.ok(localizacao.toEntityModel());
     }
 
     private Localizacao getLocalizacao(Long id) {

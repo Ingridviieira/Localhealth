@@ -17,6 +17,7 @@ import br.com.fiap.repository.LocalizacaoRepository;
 import br.com.fiap.repository.MedicoRepository;
 
 @Configuration
+
 public class DatabaseSeeder implements CommandLineRunner{
     
     @Autowired

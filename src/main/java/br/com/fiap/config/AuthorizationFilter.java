@@ -38,7 +38,7 @@ public class AuthorizationFilter extends OncePerRequestFilter{
     }
 
     private String getToken(HttpServletRequest request) {
-        var header = request.getHeader("Authorization"); // Bearer aieiaioehfsdjnfgjkdsbli
+        var header = request.getHeader("Authorization");
 
         if (header == null || !header.startsWith("Bearer ")){
             return null;

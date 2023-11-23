@@ -1,19 +1,23 @@
 package br.com.fiap.models;
 
-import java.util.ArrayList;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+
 import java.util.Collection;
 import java.util.List;
+
+import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.EntityModel;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import jakarta.persistence.CascadeType;
+import br.com.fiap.controllers.MedicoController;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -37,8 +41,6 @@ public class Medico implements UserDetails {
     private String email;
     private String senha;
 
-    @OneToMany(mappedBy = "medico", cascade = CascadeType.ALL)
-    private List<Diagnostico> diagnostico = new ArrayList<>();
    
     @Override
     public String getPassword() {
@@ -73,6 +75,18 @@ public class Medico implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+    }
+
+    @ManyToOne
+    Diagnostico diagnostico;
+
+    public EntityModel<Medico> toEntityModel() {
+        return EntityModel.of(this,
+        linkTo(methodOn(MedicoController.class).show(id)).withSelfRel(),
+        linkTo(methodOn(MedicoController.class).destroy(id)).withRel("delete"),
+        linkTo(methodOn(MedicoController.class).index(null, Pageable.unpaged())).withRel("all"),
+        linkTo(methodOn(MedicoController.class).show(this.getDiagnostico().getId())).withRel("diagnostico")
+        );
     }
 
 }

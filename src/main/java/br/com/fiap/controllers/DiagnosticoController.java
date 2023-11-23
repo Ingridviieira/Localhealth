@@ -37,10 +37,10 @@ public class DiagnosticoController {
 
     @PostMapping
     public ResponseEntity<Diagnostico> create(
-            @RequestBody @Valid Diagnostico diagnostico,
+            @RequestBody @Valid Diagnostico diagnostico, 
             BindingResult result
         ){
-        log.info("cadastrando o diagnostico: " + diagnostico);
+        log.info("cadastrando diagnostico: " + diagnostico);
         repository.save(diagnostico);
         return ResponseEntity.status(HttpStatus.CREATED).body(diagnostico);
     }
@@ -69,7 +69,6 @@ public class DiagnosticoController {
         repository.save(diagnostico);
         return ResponseEntity.ok(diagnostico);
     }
-
     private Diagnostico getDiagnostico(Long id) {
         return repository.findById(id).orElseThrow(
             () -> new RestNotFoundException("diagnostico não encontrado"));

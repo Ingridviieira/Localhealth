@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
 
 import br.com.fiap.controllers.LocalizacaoController;
+import br.com.fiap.controllers.MedicoController;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -44,5 +45,14 @@ public class Localizacao {
     @ManyToOne
     @JoinColumn(name = "diagnostico_id")
     private Diagnostico diagnostico;
+
+    public EntityModel<Localizacao> toEntityModel() {
+        return EntityModel.of(this,
+        linkTo(methodOn(LocalizacaoController.class).show(id)).withSelfRel(),
+        linkTo(methodOn(LocalizacaoController.class).destroy(id)).withRel("delete"),
+        linkTo(methodOn(LocalizacaoController.class).index(null, Pageable.unpaged())).withRel("all"),
+        linkTo(methodOn(LocalizacaoController.class).show(this.getDiagnostico().getId())).withRel("diagnostico")
+        );
+    }
 
 }

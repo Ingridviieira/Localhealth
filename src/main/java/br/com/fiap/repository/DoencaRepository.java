@@ -9,4 +9,6 @@ import br.com.fiap.models.Doenca;
 
 public interface DoencaRepository extends JpaRepository<Doenca, Long> {
     Page<Doenca> findByNmDoencaContaining(String busca, Pageable pageable);
+
+   
 }

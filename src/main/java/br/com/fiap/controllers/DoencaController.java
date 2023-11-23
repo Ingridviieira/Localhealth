@@ -23,16 +23,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.fiap.exceptions.RestNotFoundException;
 import br.com.fiap.models.Doenca;
+
 import br.com.fiap.repository.DiagnosticoRepository;
 import br.com.fiap.repository.DoencaRepository;
-
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
-@RequestMapping("/api/v1/doencas")
+@RequestMapping("/api/v1/doenca")
 @Slf4j
 @SecurityRequirement(name = "bearer-key")
 @Tag(name = "refeicao")
@@ -43,47 +46,61 @@ public class DoencaController {
 
     private DiagnosticoRepository diagnosticoRepository;
 
+    @Autowired
+    PagedResourcesAssembler<Object> assembler;
+
     @GetMapping
-    public Page<Doenca> index(@RequestParam(required = false) String busca, @PageableDefault(size = 5) Pageable pageable) {
-        if (busca == null)
-            return doencaRepository.findAll(pageable);
-        return doencaRepository.findByNmDoencaContaining(busca, pageable);
+    public PagedModel<EntityModel<Object>> index(@RequestParam(required = false) String busca, @ParameterObject @PageableDefault(size = 5) Pageable pageable) {
+        var doenca = (busca == null) ?
+            doencaRepository.findAll(pageable):
+            doencaRepository.findByNmDoencaContaining(busca, pageable);
+
+        return assembler.toModel(doenca.map(Doenca::toEntityModel)); //HAL
     }
 
     @PostMapping
-    public ResponseEntity<Doenca> create(
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "a doenca foi cadastrada com sucesso"),
+        @ApiResponse(responseCode = "400", description = "os dados enviados são inválidos")
+    })
+    public ResponseEntity<EntityModel<Doenca>> create(
             @RequestBody @Valid Doenca doenca,
             BindingResult result) {
         log.info("cadastrando doenca: " + doenca);
         doencaRepository.save(doenca);
         doenca.setDiagnostico(diagnosticoRepository.findById(doenca.getDiagnostico().getId()).get());
-        return ResponseEntity.status(HttpStatus.CREATED).body(doenca);
+        return ResponseEntity
+            .created(doenca.toEntityModel().getRequiredLink("self").toUri())
+            .body(doenca.toEntityModel());
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<Doenca> show(@PathVariable Long id) {
+    @Operation(
+        summary = "Detalhes da doenca",
+        description = "Retornar os dados da despesa de acordo com o id informado no path"
+    )
+    public EntityModel<Doenca> show(@PathVariable Long id) {
         log.info("buscando doenca: " + id);
-        return ResponseEntity.ok(getDoenca(id));
+        return getDoenca(id).toEntityModel();
     }
 
     @DeleteMapping("{id}")
     public ResponseEntity<Doenca> destroy(@PathVariable Long id) {
-        log.info("apagando doença: " + id);
+        log.info("apagando doenca: " + id);
         doencaRepository.delete(getDoenca(id));
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<Doenca> update(
+    public ResponseEntity<EntityModel<Doenca>> update(
             @PathVariable Long id,
             @RequestBody @Valid Doenca doenca) {
-        log.info("atualizando doença: " + id);
+        log.info("atualizando doenca: " + id);
         getDoenca(id);
         doenca.setId(id);
         doencaRepository.save(doenca);
-        return ResponseEntity.ok(doenca);
+        return ResponseEntity.ok(doenca.toEntityModel());
     }
-
     private Doenca getDoenca(Long id) {
         return doencaRepository.findById(id).orElseThrow(
                 () -> new RestNotFoundException("doença não encontrada"));
